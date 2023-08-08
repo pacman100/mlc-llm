@@ -1,6 +1,38 @@
 """Namespace of callback functions in Python API."""
 #! pylint: disable=unused-import, invalid-name
 
+from . import base
+
+class DeltaCallback:
+    """Base class that fetches delta callback"""
+    def __init__(self):
+        self.prev_output = ""
+
+
+    def __call__(self, message: str = ""):
+        r"""Stream the message to stdout without any buffering.
+
+        Parameters
+        ----------
+        message : str
+            The new piece of message that is not streamed to stdout yet.
+        stopped : bool
+            Whether streaming reaches the end. If so, print out an additional "\n".
+        """
+        delta = get_delta_str(self.prev_output, message)
+        self.prev_output = message
+        self.delta_callback(delta)
+
+
+    def delta_callback(delta_message:str):
+        raise NotImplemented()
+
+
+class StreamToStdout(DeltaCallback):
+    pass
+
+
+
 
 class stream_to_stdout(object):
     """Stream the output of the chat module to stdout."""

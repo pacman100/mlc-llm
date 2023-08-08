@@ -1197,6 +1197,14 @@ tvm::runtime::Module CreateChatModule(DLDevice device) {
   return Module(n);
 }
 
+
+std::string GetDeltaMessage(std::string, std::string) {
+}
+
+// register as a system function that can be queried
+TVM_REGISTER_GLOBAL("mlc.get_delta_message").set_body_typed(GetDeltaMessage);
+
+
 // register as a system function that can be queried
 TVM_REGISTER_GLOBAL("mlc.llm_chat_create").set_body_typed([](int device_type, int device_id) {
   return CreateChatModule(DLDevice{static_cast<DLDeviceType>(device_type), device_id});
