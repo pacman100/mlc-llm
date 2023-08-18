@@ -453,8 +453,9 @@ class LLMChat {
     encoded = this->tokenizer_->Encode(all_prompt);
     tokens.insert(tokens.end(), encoded.begin(), encoded.end());
     if (tokens.size() >= this->max_window_size_) {
-      LOG(WARNING)
-          << "The prompt tokens are more than `max_window_size`, the input will be truncated.";
+      LOG(WARNING) << "The number of prompt tokens " << tokens.size()
+                   << " are more than `max_window_size` " << this->max_window_size_
+                   << ", the input will be truncated.";
       ICHECK_GT(this->max_window_size_, this->mean_gen_len_);
       std::vector<int32_t> truncated_tokens(
           tokens.end() - (this->max_window_size_ - this->mean_gen_len_), tokens.end());
@@ -952,7 +953,7 @@ class LLMChat {
   // total sequence len,
   int64_t total_seq_len_{0};
   // max window size, mean generation length
-  int64_t max_window_size_{768}, mean_gen_len_{128}, max_gen_len_{512};
+  int64_t max_window_size_{8192}, mean_gen_len_{128}, max_gen_len_{512};
   // shift window fill factor
   double shift_fill_factor_{0.3};
   // temperature
