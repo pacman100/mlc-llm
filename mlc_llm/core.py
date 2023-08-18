@@ -481,6 +481,7 @@ def build_model_from_args(args: argparse.Namespace):
     os.makedirs(args.artifact_path, exist_ok=True)
     if args.debug_dump:
         os.makedirs(os.path.join(args.artifact_path, "debug"), exist_ok=True)
+    print(args)
     cache_path = os.path.join(args.artifact_path, "mod_cache_before_build.pkl")
     args.raw_params_path = os.path.join(args.artifact_path, "raw_params")
     use_cache = args.use_cache and os.path.isfile(cache_path)

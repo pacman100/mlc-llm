@@ -42,7 +42,7 @@ class RestAPIArgs:
                 The full path to the model library file to use (e.g. a ``.so`` file).
                 """
             )
-        }
+        },
     )
     device: str = field(
         default="auto",
@@ -56,7 +56,7 @@ class RestAPIArgs:
                 is provided, it will be set to 0 by default.
                 """
             )
-        }
+        },
     )
     host: str = field(
         default="127.0.0.1",
@@ -66,7 +66,7 @@ class RestAPIArgs:
                 The host at which the server should be started, defaults to ``127.0.0.1``.
                 """
             )
-        }
+        },
     )
     port: int = field(
         default=8000,
@@ -76,8 +76,9 @@ class RestAPIArgs:
                 The port on which the server should be started, defaults to ``8000``.
                 """
             )
-        }
+        },
     )
+
 
 def convert_args_to_argparser() -> argparse.ArgumentParser:
     """Convert from RestAPIArgs to an equivalent ArgumentParser."""
@@ -97,13 +98,10 @@ def convert_args_to_argparser() -> argparse.ArgumentParser:
 
 session = {}
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    chat_mod = ChatModule(
-        model=ARGS.model,
-        device=ARGS.device,
-        lib_path=ARGS.lib_path
-    )
+    chat_mod = ChatModule(model=ARGS.model, device=ARGS.device, lib_path=ARGS.lib_path)
     session["chat_mod"] = chat_mod
 
     yield
@@ -112,6 +110,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
 
 class AsyncChatCompletionStream:
     def __aiter__(self):
@@ -140,11 +139,12 @@ async def request_completion(request: ChatCompletionRequest):
     Creates model response for the given chat conversation.
     """
     if len(request.messages) > 1:
-            raise ValueError(
-                """
+        raise ValueError(
+            """
                 The /v1/chat/completions endpoint currently only supports single message prompts.
                 Please ensure your request contains only one message
-                """)
+                """
+        )
 
     if request.stream:
 
@@ -158,9 +158,7 @@ async def request_completion(request: ChatCompletionRequest):
                         choices=[
                             ChatCompletionResponseStreamChoice(
                                 index=0,
-                                delta=DeltaMessage(
-                                    role="assistant", content=content[len(prev_txt) :]
-                                ),
+                                delta=DeltaMessage(role="assistant", content=content[len(prev_txt) :]),
                                 finish_reason="stop",
                             )
                         ]
@@ -197,7 +195,8 @@ async def request_completion(request: CompletionRequest):
                 """
                 The /v1/completions endpoint currently only supports single message prompts.
                 Please ensure your request contains only one message
-                """)
+                """
+            )
         prompt = request.prompt[0]
     else:
         prompt = request.prompt
@@ -209,6 +208,34 @@ async def request_completion(request: CompletionRequest):
         # TODO: Fill in correct usage info
         usage=UsageInfo(prompt_tokens=0, completion_tokens=0, total_tokens=0),
     )
+
+
+@app.post("/")
+async def request_completion(request: VisualStudioCodeCompletionRequest):
+    """
+    Creates a completion for a given prompt.
+    """
+    session["chat_mod"].reset_chat()
+    # Langchain's load_qa_chain.run expects the input to be a list with the query
+    prompt = request.inputs
+    if len(prompt.split(" "))>6000:
+        diff_len = len(prompt.split(" ")) - 6000
+        prompt_suffix = prompt.split("<fim_siffix>")[1].split(" ")
+        prompt_suffix = """<fim_suffix>""" if len(prompt_suffix)-(diff_len)<0 else " ".join(prompt_suffix[:len(prompt_suffix)-(diff_len)])
+        prompt_prefix = prompt.split("<fim_siffix>")[0].split(" ")
+        prompt = prompt_prefix+prompt_suffix+"<fim_middle>"
+
+    print(prompt)
+
+    msg = session["chat_mod"].generate(prompt=prompt)
+    print(msg)
+
+    # return CompletionResponse(
+    #     choices=[CompletionResponseChoice(index=0, text=msg)],
+    #     # TODO: Fill in correct usage info
+    #     usage=UsageInfo(prompt_tokens=0, completion_tokens=0, total_tokens=0),
+    # )
+    return {"generated_text": msg}
 
 
 @app.post("/v1/embeddings")

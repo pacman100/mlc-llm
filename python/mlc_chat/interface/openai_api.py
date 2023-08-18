@@ -13,6 +13,7 @@ class ChatMessage(BaseModel):
     content: str
     name: str | None = None
 
+
 class ChatCompletionRequest(BaseModel):
     model: str
     messages: list[ChatMessage]
@@ -27,15 +28,18 @@ class ChatCompletionRequest(BaseModel):
     # frequency_penalty: Optional[float] = 0.0
     # user: Optional[str] = None
 
+
 class UsageInfo(BaseModel):
     prompt_tokens: int = 0
     completion_tokens: int | None = 0
     total_tokens: int = 0
 
+
 class ChatCompletionResponseChoice(BaseModel):
     index: int
     message: ChatMessage
     finish_reason: Literal["stop", "length"] | None = None
+
 
 class ChatCompletionResponse(BaseModel):
     id: str = Field(default_factory=lambda: f"chatcmpl-{shortuuid.random()}")
@@ -45,14 +49,17 @@ class ChatCompletionResponse(BaseModel):
     # TODO: Implement support for the following fields
     usage: UsageInfo | None = None
 
+
 class DeltaMessage(BaseModel):
     role: str | None = None
     content: str | None = None
+
 
 class ChatCompletionResponseStreamChoice(BaseModel):
     index: int
     delta: DeltaMessage
     finish_reason: Literal["stop", "length"] | None = None
+
 
 class ChatCompletionStreamResponse(BaseModel):
     id: str = Field(default_factory=lambda: f"chatcmpl-{shortuuid.random()}")
@@ -60,15 +67,23 @@ class ChatCompletionStreamResponse(BaseModel):
     created: int = Field(default_factory=lambda: int(time.time()))
     choices: list[ChatCompletionResponseStreamChoice]
 
+
 class CompletionRequest(BaseModel):
     model: str
     prompt: str | list[str]
+
+
+class VisualStudioCodeCompletionRequest(BaseModel):
+    inputs: str
+    parameters: dict
+
 
 class CompletionResponseChoice(BaseModel):
     index: int
     text: str
     logprobs: int | None = None
     finish_reason: Literal["stop", "length"] | None = None
+
 
 class CompletionResponse(BaseModel):
     id: str = Field(default_factory=lambda: f"cmpl-{shortuuid.random()}")
@@ -77,10 +92,12 @@ class CompletionResponse(BaseModel):
     choices: list[CompletionResponseChoice]
     usage: UsageInfo
 
+
 class EmbeddingsRequest(BaseModel):
     model: str
     input: str
     user: str | None = None
+
 
 class EmbeddingsResponse(BaseModel):
     object: str = "list"
