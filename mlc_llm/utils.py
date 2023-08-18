@@ -3,7 +3,7 @@ import argparse
 import json
 import os
 import shutil
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 
 import tvm
 from tvm import relax
@@ -65,12 +65,14 @@ def argparse_postproc_common(args: argparse.Namespace) -> None:
         "rwkv-": "rwkv",
         "gorilla-": "gorilla",
         "guanaco": "guanaco",
-        "starcoder": "code_gpt",
         "wizardlm-7b": "wizardlm_7b",  # first get rid of 7b
         "wizardlm-": "vicuna_v1.1",  # all others use vicuna template
         "wizardmath-": "wizard_coder_or_math",
         "wizardcoder-": "wizard_coder_or_math",
-        "gpt_bigcode-santacoder": "code_gpt",
+        "starcoder": "gpt_bigcode",
+        "gpt_bigcode-santacoder": "gpt_bigcode",
+        "stablecode-completion": "stablecode_completion",
+        "stablecode-instruct": "stablecode_instruct",
         "chatglm2": "glm",
         "codegeex2": "glm",
     }
@@ -118,7 +120,10 @@ def debug_dump_benchmark_script(
         )
 
         stmt = []
-        relax_funcs, _ = extract_all_func_info_from_relax(mod)
+        try:
+            relax_funcs, _ = extract_all_func_info_from_relax(mod)
+        except NotImplementedError:
+            return
         tvm_script_prefix = "# from tvm.script import tir as T"
         for relax_func_gv in relax_funcs:  # pylint: disable=consider-using-dict-items
             for prim_func_gv in relax_funcs[relax_func_gv]:
