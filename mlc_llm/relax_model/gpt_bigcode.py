@@ -35,7 +35,7 @@ class GPTBigCodeConfig:
         eos_token_id: int = 0,
         initializer_range: float = 0.02,
         layer_norm_epsilon: float = 1e-05,
-        max_sequence_length: int = 2048,
+        max_sequence_length: int = 8192,
         n_embd: int = 6144,
         n_head: int = 48,
         n_inner: int = 24576,
@@ -638,7 +638,7 @@ def get_model(args: argparse.Namespace, hf_config):
         if max_seq_len != -1:
             config.max_sequence_length = max_seq_len
         elif config.max_sequence_length is None:
-            config.max_sequence_length = 2048
+            config.max_sequence_length = 8192
 
         param_manager = ParamManager()
         bb = relax.BlockBuilder()
